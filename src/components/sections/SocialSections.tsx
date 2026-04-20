@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase, isConfigured } from '@/lib/supabase';
 
 const reviews = [
   {
@@ -143,6 +143,9 @@ export function ContactSection() {
 
     setIsSubmitting(true);
     try {
+      if (!isConfigured) {
+        throw new Error('Database not configured. Cannot save inquiry.');
+      }
       const { error } = await supabase.from('inquiries').insert([{
         customer_name: formData.name,
         customer_email: formData.email,
@@ -155,7 +158,8 @@ export function ContactSection() {
       toast.success('Your message has been woven into our queue.');
       setFormData({ name: '', email: '', message: '' });
     } catch (error: any) {
-      toast.error('Sync failed: ' + error.message);
+      console.error('Inquiry submission failed:', error);
+      toast.error('Sync failed: ' + (error.message || 'Unknown error'));
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setIsSuccess(false), 5000);

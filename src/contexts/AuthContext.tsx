@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      if (!isPlaceholder && session) {
+      if (session) {
         await supabase.auth.signOut();
       }
     } catch (error) {

@@ -8,7 +8,7 @@ import { HeroCarousel } from '@/components/sections/HeroCarousel';
 import { BabylonCrochetViewer } from '@/components/Three/BabylonCrochetViewer';
 import { CustomerReviews, ContactSection, WhatsAppFloat } from '@/components/sections/SocialSections';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase, isConfigured } from '@/lib/supabase';
 import { Product } from '@/types';
 
 export function Home() {
@@ -16,6 +16,10 @@ export function Home() {
   const [featured, setFeatured] = useState<Product[]>([]);
 
   useEffect(() => {
+    if (!isConfigured) {
+      console.warn('Supabase not configured. Skipping data fetch in Home.');
+      return;
+    }
     fetchFeatured();
     
     // Subscribe to changes in the products table

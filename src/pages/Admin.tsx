@@ -79,7 +79,6 @@ export function Admin() {
     // Listen to cross-tab updates and simulation events
     const handleStorageChange = () => fetchAllData();
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('simulation_update', handleStorageChange);
 
     // Setup Supabase Realtime
     const channel = supabase
@@ -91,7 +90,6 @@ export function Admin() {
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('simulation_update', handleStorageChange);
       supabase.removeChannel(channel);
     };
   }, []);

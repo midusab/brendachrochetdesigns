@@ -28,11 +28,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
-const MOCK_ACTIVITIES: any[] = [];
-
-const MOCK_NOTIFICATIONS: any[] = [];
-
-const MOCK_CLOSET: any[] = [];
 
 export function Profile() {
   const { user, role, isMuse, isCollector } = useAuth();
@@ -59,7 +54,7 @@ export function Profile() {
     
     try {
       // Fetch order count
-      const { count: oCount, error } = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('id', user.id); // This is just a simulation of the 'orders' table. In a real app we'd join on user_id
+      const { count: oCount, error } = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('customer_id', user.id);
       if (error) throw error;
       setOrderCount(oCount || 0);
     } catch (error: any) {
@@ -71,11 +66,6 @@ export function Profile() {
 
   const handleUpdateMeasurements = async () => {
     try {
-      if (isPlaceholder) {
-        toast.success('Demo Sync: Your Digital Twin data has been cached locally.');
-        return;
-      }
-
       const { error } = await supabase.auth.updateUser({
         data: { measurements }
       });
@@ -96,12 +86,6 @@ export function Profile() {
 
   const handleUpdateProfile = async () => {
     try {
-      if (isPlaceholder) {
-        toast.success('Demo Sync: Your signature has been updated in the preview.');
-        setIsEditing(false);
-        return;
-      }
-
       const { error } = await supabase.auth.updateUser({
         data: { full_name: fullName }
       });
@@ -116,11 +100,6 @@ export function Profile() {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
-
-    if (isPlaceholder) {
-      toast.error('Avatar uploading is disabled in simulation mode. Connect to Supabase first.');
-      return;
-    }
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -163,20 +142,16 @@ export function Profile() {
   const handleSimulateMuse = async () => {
     try {
       const newRole = role === 'MUSE' ? 'COLLECTOR' : 'MUSE';
-      if (isPlaceholder) {
-        toast.info(`Simulating ${newRole} in local mode.`);
-        return;
-      }
 
       const { error } = await supabase.auth.updateUser({
         data: { role: newRole }
       });
       if (error) throw error;
-      toast.success(`Role simulated: ${newRole}. Refreshing state...`);
+      toast.success(`Role updated to: ${newRole}. Refreshing state...`);
       // Local reload to trigger AuthContext refresh
       window.location.reload();
     } catch (error: any) {
-      toast.error('Simulation failed: ' + error.message);
+      toast.error('Update failed: ' + error.message);
     }
   };
 
@@ -304,21 +279,7 @@ export function Profile() {
                   <Button variant="link" className="text-xs font-bold uppercase text-secondary">Clear All</Button>
                 </CardHeader>
                 <div className="space-y-6">
-                  {MOCK_NOTIFICATIONS.map(notif => (
-                    <motion.div 
-                      key={notif.id}
-                      className={`p-6 rounded-md border ${notif.read ? 'bg-black/5 border-transparent' : 'glass-panel border-secondary/20 bg-secondary/5'} flex items-start gap-6`}
-                    >
-                      <div className={`p-3 rounded-lg ${notif.type === 'VIP' ? 'bg-secondary/20 text-secondary' : 'bg-black/10 text-muted-foreground'}`}>
-                        {notif.type === 'VIP' ? <Crown className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="font-bold text-foreground">{notif.title}</p>
-                        <p className="text-sm text-muted-foreground font-medium">{notif.message}</p>
-                      </div>
-                      {!notif.read && <div className="w-3 h-3 bg-secondary rounded-full mt-2 animate-pulse" />}
-                    </motion.div>
-                  ))}
+                  <p className="text-muted-foreground text-sm italic">No notifications yet.</p>
                 </div>
               </Card>
 
@@ -330,15 +291,7 @@ export function Profile() {
                   </CardTitle>
                 </CardHeader>
                 <div className="space-y-6">
-                  {MOCK_ACTIVITIES.map(activity => (
-                    <div key={activity.id} className="flex items-center gap-6 group">
-                      <div className="w-1.5 h-12 bg-black/5 group-hover:bg-secondary rounded-full transition-colors" />
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{activity.message}</p>
-                        <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mt-1">{activity.timestamp}</p>
-                      </div>
-                    </div>
-                  ))}
+                  <p className="text-muted-foreground text-sm italic">No activities recorded.</p>
                 </div>
               </Card>
             </div>
@@ -403,31 +356,7 @@ export function Profile() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {MOCK_CLOSET.map((item, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="glass-card rounded-lg overflow-hidden group cursor-pointer"
-                >
-                  <div className="aspect-[4/5] relative overflow-hidden">
-                    <img src={item.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="" />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-                    <div className="absolute top-6 left-6">
-                      <Badge className="glass-panel border-white/20 text-white font-bold px-3 py-1 text-[10px] uppercase">
-                        {item.type}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="p-8 flex items-center justify-between bg-white/40">
-                    <h4 className="font-bold text-xl uppercase tracking-tight">{item.name}</h4>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary/10 text-secondary">
-                      <Box className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
+              <div className="text-muted-foreground text-sm italic col-span-full text-center py-20">Your closet is empty.</div>
               
               {/* Add New Slot */}
               <div className="glass-card rounded-lg border-dashed border-black/10 flex flex-col items-center justify-center p-12 space-y-6 text-center hover:bg-black/5 transition-all group">

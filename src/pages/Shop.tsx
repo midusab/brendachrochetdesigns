@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Product } from '@/types';
-import { supabase } from '@/lib/supabase';
+import { supabase, isConfigured } from '@/lib/supabase';
 
 const CATEGORIES = ['ALL', 'FASHION', 'ACCESSORIES', 'PATTERNS', 'EXCLUSIVES'] as const;
 
@@ -20,6 +20,11 @@ export function Shop() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    if (!isConfigured) {
+      console.warn('Supabase not configured. Skipping data fetch in Shop.');
+      setLoading(false);
+      return;
+    }
     fetchProducts();
     
     // Subscribe to changes in the products table
