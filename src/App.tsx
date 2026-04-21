@@ -5,14 +5,15 @@ import { Toaster } from '@/components/ui/sonner';
 import { useState, useEffect, ReactNode, lazy, Suspense } from 'react';
 import { PageLoader } from '@/components/ui/loaders';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Home } from '@/pages/Home';
 
-// Lazy load pages for fast initial load
-const Home = lazy(() => import('@/pages/Home').then(m => ({ default: m.Home })));
+// Lazy load other pages
 const Portfolio = lazy(() => import('@/pages/Portfolio').then(m => ({ default: m.Portfolio })));
 const Shop = lazy(() => import('@/pages/Shop').then(m => ({ default: m.Shop })));
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
 const Auth = lazy(() => import('@/pages/Auth').then(m => ({ default: m.Auth })));
 const Profile = lazy(() => import('@/pages/Profile').then(m => ({ default: m.Profile })));
+const Wishlist = lazy(() => import('@/pages/Wishlist').then(m => ({ default: m.Wishlist })));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -46,6 +47,14 @@ export default function App() {
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route 
+                  path="/wishlist" 
+                  element={
+                    <ProtectedRoute>
+                      <Wishlist />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route 
                   path="/profile" 
                   element={

@@ -74,6 +74,12 @@ export function BabylonCrochetViewer() {
       new ParticleSystem("yarnParticles", 2000, scene);
 
     particleSystem.particleTexture = new Texture("https://www.babylonjs.com/assets/gradient.png", scene);
+    particleSystem.particleTexture.onLoadObservable.add(() => {
+      console.log('Particle texture loaded');
+    });
+    particleSystem.particleTexture.onDisposeObservable.add(() => {
+      console.warn('Particle texture disposed');
+    });
     particleSystem.emitter = torusKnot; // The knot itself emits particles
     particleSystem.minEmitBox = new Vector3(-1, -1, -1);
     particleSystem.maxEmitBox = new Vector3(1, 1, 1);

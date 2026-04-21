@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, User, Menu, Scissors, LogOut, LayoutDashboard } from 'lucide-react';
+import { ShoppingBag, User, Menu, Scissors, LogOut, LayoutDashboard, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -161,6 +161,13 @@ export function Header() {
                 {user && (
                   <>
                     <div className="h-px bg-black/5 w-full my-4" />
+                    <Link 
+                      to="/wishlist" 
+                      onClick={() => setIsOpen(false)}
+                      className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-3 text-foreground/60 hover:text-foreground"
+                    >
+                      <Heart className="w-6 h-6" /> Wishlist
+                    </Link>
                     <Link 
                       to="/profile" 
                       onClick={() => setIsOpen(false)}

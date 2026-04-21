@@ -88,9 +88,22 @@ CREATE TABLE IF NOT EXISTS public.ui_settings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 8. Wishlists
+CREATE TABLE IF NOT EXISTS public.wishlists (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, product_id)
+);
+
 -- RLS Policies Examples:
 -- ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Public read" ON public.products FOR SELECT USING (true);
 -- CREATE POLICY "Admin write" ON public.products FOR ALL USING (
 --   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'ADMIN')
 -- );
+-- ALTER TABLE public.wishlists ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Users can read own wishlist" ON public.wishlists FOR SELECT USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can insert own wishlist" ON public.wishlists FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "Users can delete own wishlist" ON public.wishlists FOR DELETE USING (auth.uid() = user_id);

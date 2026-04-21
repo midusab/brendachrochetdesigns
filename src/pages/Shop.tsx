@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Crown, ShoppingBag, Search, Filter } from 'lucide-react';
+import { Crown, ShoppingBag, Search, Filter, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,40 @@ import { supabase, isConfigured } from '@/lib/supabase';
 const CATEGORIES = ['ALL', 'FASHION', 'ACCESSORIES', 'PATTERNS', 'EXCLUSIVES'] as const;
 
 export function Shop() {
-  const { isMuse } = useAuth();
+  const { user, isMuse } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<typeof CATEGORIES[number]>('ALL');
   const [search, setSearch] = useState('');
+
+  async function toggleWishlist(productId: string) {
+    if (!user) {
+      toast.error('Please login to add to wishlist');
+      return;
+    }
+    try {
+      const { data, error: checkError } = await supabase
+        .from('wishlists')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('product_id', productId)
+        .maybeSingle();
+      
+      if (checkError) throw checkError;
+
+      if (data) {
+        // Remove
+        await supabase.from('wishlists').delete().eq('id', data.id);
+        toast.success('Removed from wishlist');
+      } else {
+        // Add
+        await supabase.from('wishlists').insert({ user_id: user.id, product_id: productId });
+        toast.success('Added to wishlist');
+      }
+    } catch (error: any) {
+      toast.error('Failed to update wishlist: ' + error.message);
+    }
+  }
 
   useEffect(() => {
     if (!isConfigured) {
@@ -136,7 +165,7 @@ export function Shop() {
                   <div className="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
                   <img 
                     src={product.image_url} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
+                    className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-500 ease-out cursor-zoom-in"
                     alt={product.name}
                     referrerPolicy="no-referrer"
                   />
@@ -152,6 +181,14 @@ export function Shop() {
                       </Badge>
                     )}
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute top-2 right-2 rounded-full glass-panel hover:bg-white/20 z-20"
+                    onClick={() => toggleWishlist(product.id)}
+                  >
+                    <Heart className="w-5 h-5 text-secondary" />
+                  </Button>
                 </div>
                 <div className="p-8 md:p-10 flex-1 flex flex-col justify-between space-y-8">
                   <div>
